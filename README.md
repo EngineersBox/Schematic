@@ -149,7 +149,7 @@ The schema for the inbuilt support is:
 | Field | Type |
 |-------|------|
 | inbuilt | `Boolean` |
-| fieldSet | `...{}<B | C<T> | V>` |
+| fieldSet | `{...<B | C<T> | V>}` |
 
 *Capsule (Config)*
 
@@ -228,8 +228,8 @@ Data declarations are "intakes" for data for a specific existing source such as 
 
 ```JSON
 data "<"file" | "service">" "String<NAME>" {
-    "reference" = "String<'L' | 'W'>::<String | V<String>"
-    "schema" = "<String | V<String> | structure>"
+    "reference" = String<'L' | 'W'>::<String | V<String>
+    "schema" {...<B | C<T> | V>}
 }
 ```
 
@@ -240,7 +240,7 @@ data.<String<TYPE>>.<String<NAME>>.<String<ATTRIUTE>>[.<String<ATTRIUTE>>]
 ```JSON
 data "service" "service_manager_container" {
     "reference" = "L::/etc/capsule/containers/service_manager_container"
-    "schema" = structure {
+    "schema" {
         "containerId" = <String | V<String>>
         "proc" {
             "pidsMax" = <Integer | V<Integer>>
@@ -290,7 +290,7 @@ capture "capsule" {
     "handler" = "capsule"
 }
 
-resource "capsule" "test_continer" {
+intstance "capsule" "test_continer" {
     "hasDependency" = []
     "count" = 2
     structure {
