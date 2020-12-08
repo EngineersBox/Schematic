@@ -112,7 +112,7 @@ variable "testcapsule_clsid" {
     "value" = 85831
 }
 
-instance "capsule_config" "test_capsule" {
+instance "capsul::config" "test_capsule" {
     "hasDependency" = []
     "count" = 2
     structure {
