@@ -2,7 +2,6 @@ package schematic
 
 import (
 	"fmt"
-	"strconv"
 )
 
 var reservedKeywords []string = []string{
@@ -29,70 +28,6 @@ var allTypes []SchemaType = []SchemaType{
 // ---- BASIC TYPES ----
 
 var BasicTypes []SchemaType = allTypes[:4]
-
-// ---- VARIABLE ----
-
-type Variable struct {
-	value     string
-	valueType SchemaType
-}
-
-type VariableError struct {
-	prob string
-}
-
-func (e *VariableError) Error() string {
-	return e.prob
-}
-
-func (v *Variable) ValidateType() error {
-	for _, t := range BasicTypes {
-		if t == v.valueType {
-			return nil
-		}
-	}
-	return &VariableError{fmt.Sprintf("Invalid type: %s", v.valueType)}
-}
-
-func (v *Variable) ToBool() (bool, error) {
-	if v.valueType != BasicTypes[4] {
-		return false, &VariableError{fmt.Sprintf("Not of type 'Boolean': %s", v.valueType)}
-	}
-	val, err := strconv.ParseBool(v.value)
-	if err != nil {
-		return false, &VariableError{err.Error()}
-	}
-	return val, nil
-}
-
-func (v *Variable) ToInt() (int, error) {
-	if v.valueType != BasicTypes[2] {
-		return 0, &VariableError{fmt.Sprintf("Not of type 'Integer': %s", v.valueType)}
-	}
-	val, err := strconv.Atoi(v.value)
-	if err != nil {
-		return 0, &VariableError{err.Error()}
-	}
-	return val, nil
-}
-
-func (v *Variable) ToFloat64() (float64, error) {
-	if v.valueType != BasicTypes[3] || len(v.value) < 1 || string(v.value[len(v.value)-1]) != "f" {
-		return 0.0, &VariableError{fmt.Sprintf("Not of type 'Float': %s", v.valueType)}
-	}
-	val, err := strconv.ParseFloat(v.value[:len(v.value)-1], 64)
-	if err != nil {
-		return 0, &VariableError{err.Error()}
-	}
-	return val, nil
-}
-
-func (v *Variable) ToString() (string, error) {
-	if v.valueType != BasicTypes[0] {
-		return "", &VariableError{fmt.Sprintf("Not of type 'String': %s", v.valueType)}
-	}
-	return v.value, nil
-}
 
 // ---- COMPLEX TYPES ----
 
