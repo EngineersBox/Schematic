@@ -242,17 +242,19 @@ data "service" "service_manager_container" {
     "reference" = "L::/etc/capsule/containers/service_manager_container"
     "schema" = structure {
         "containerId" = <String | V<String>>
-        "config" {
+        "proc" {
             "pidsMax" = <Integer | V<Integer>>
             "memMax" = <Integer | V<Integer>>
-            "netClsId" = <Integer | V<Integer>>
             "terminateOnClose" = <Boolean | V<Boolean>>
+        }
+        "network" {
+            "netClsId" = <Integer | V<Integer>>
         }
     }
 }
 
 instance "test_inst_type" "example_inst" {
-    "someProperty" = data.service.service_manager_container.config.netClsId
+    "someProperty" = data.service.service_manager_container.network.netClsId
     ...
 }
 ```
