@@ -20,6 +20,14 @@ A terraform style IaC (Infrastructure as Code) manager of services
 
 ---
 
+### Expressions (E)
+
+```JSON
+<String> = <B | V<T>>
+```
+
+---
+
 ### Variables (`V<T>`)
 
 ```JSON
@@ -36,7 +44,7 @@ variable "anotherVar" = <B>
 
 ---
 
-### Complex Types (`C`)
+### Complex Types (`C<T>`)
 
 * `Block<T>`
 * `Array<T>`
@@ -63,13 +71,13 @@ A list of values or composites
 
 ---
 
-### Schema Strucure
+## Schema Strucure
 
 There are three top level components to a schema:
 
 * Instance
 * Data
-* Template
+* Capture
 
 Instances are paramterized and filled instantiations of a template, data are a source that can be referenced and templates are skeletons that describe the structure of a custom instance.
 
@@ -104,7 +112,7 @@ variable "testcapsule_clsid" {
     "value" = 85831
 }
 
-instance "test_capsule" "capsule::config" {
+instance "capsule_config" "test_capsule" {
     "hasDependency" = []
     "count" = 2
     structure {
@@ -153,7 +161,7 @@ structure {
         "pidsMax" = <Integer | V<Integer>>
         "memMax" = <Integer | V<Integer>>
         "netClsId" = <Integer | V<Integer>>
-        "terminateOnClose" <Boolean | V<Boolean>>
+        "terminateOnClose" = <Boolean | V<Boolean>>
     }
 }
 ```
@@ -215,5 +223,89 @@ structure {
 ---
 
 ### Data
+
+Data declarations are "intakes" for data for a specific existing source such as a running container or active S3 bucket
+
+```JSON
+data "<"file" | "service">" "String<NAME>" {
+    "reference" = "String<'L' | 'W'>::<String | V<String>"
+    "schema" = "<String | V<String> | structure>"
+}
+```
+
+```typescript
+data.<String<TYPE>>.<String<NAME>>.<String<ATTRIUTE>>[.<String<ATTRIUTE>>]
+```
+
+```JSON
+data "service" "service_manager_container" {
+    "reference" = "L::/etc/capsule/containers/service_manager_container"
+    "schema" = structure {
+        "containerId" = <String | V<String>>
+        "config" {
+            "pidsMax" = <Integer | V<Integer>>
+            "memMax" = <Integer | V<Integer>>
+            "netClsId" = <Integer | V<Integer>>
+            "terminateOnClose" = <Boolean | V<Boolean>>
+        }
+    }
+}
+
+instance "test_inst_type" "example_inst" {
+    "someProperty" = data.service.service_manager_container.config.netClsId
+    ...
+}
+```
+
+---
+
+### Capture
+
+Captures define the source code for instances
+
+```JSON
+capture "String<NAME>" {
+    "source" = <String | V<String>>
+    "hasDependency" = [
+        ...<String | V<String>>
+    ]
+    "handler" = <String | V<String>>
+}
+```
+
+For example
+
+```JSON
+variable "service_manager_net_id" {
+    value = 2586425
+}
+
+variable "termination_override" {
+    value = false
+}
+
+capture "capsule" {
+    "source" = "github.com/EngineersBox/Capsule"
+    "hasDependency" = [
+        "github.com/google/golang"
+    ]
+    "handler" = "capsule"
+}
+
+resource "capsule" "test_continer" {
+    "hasDependency" = []
+    "count" = 2
+    structure {
+        "inbuilt" = true
+        "containerId" = "service_id_573"
+        "config" {
+            "pidsMax" = 20
+            "memMax" = 4096
+            "netClsId" = var.service_manager_net_id
+            "terminateOnClose" = true
+        }
+    }
+}
+```
 
 ---
