@@ -280,10 +280,6 @@ variable "service_manager_net_id" {
     value = 2586425
 }
 
-variable "termination_override" {
-    value = false
-}
-
 capture "capsule" {
     "source" = "github.com/EngineersBox/Capsule"
     "hasDependency" = [
