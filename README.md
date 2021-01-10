@@ -20,9 +20,9 @@ A terraform style IaC (Infrastructure as Code) manager of services
 
 ---
 
-### Expressions (E)
+### Expressions (`E`)
 
-```JSON
+```Typescript
 <String> = <B | V<T>>
 ```
 
@@ -30,7 +30,7 @@ A terraform style IaC (Infrastructure as Code) manager of services
 
 ### Variables (`V<T>`)
 
-```JSON
+```HCL
 variable "someVar" {
     "value" = <T>
 }
@@ -38,7 +38,7 @@ variable "someVar" {
 
 *or*
 
-```JSON
+```Typescript
 variable "anotherVar" = <B>
 ```
 
@@ -53,7 +53,7 @@ variable "anotherVar" = <B>
 
 A composite object of fields and values:
 
-```JSON
+```HCL
 "String" {
     ..."String" = <B | C<T> | V>
 }
@@ -63,7 +63,7 @@ A composite object of fields and values:
 
 A list of values or composites
 
-```JSON
+```HCL
 "String" = [
     ...<B | C<T> | V>
 ]
@@ -93,7 +93,7 @@ Instances are paramterized and filled instantiations of a template, data are a s
 | count        	| `Integer`  	    |
 | structure    	| `Block<InstBody>` 	    |
 
-```JSON
+```HCL
 instance "String<Name>" "String<Type>" {
     "hasDependency" = [
         "String<INSTANCE NAME>"
@@ -107,12 +107,12 @@ instance "String<Name>" "String<Type>" {
 
 Example of an instance
 
-```JSON
+```HCL
 variable "testcapsule_clsid" {
     "value" = 85831
 }
 
-instance "capsul::config" "test_capsule" {
+instance "capsule::config" "test_capsule" {
     "hasDependency" = []
     "count" = 2
     structure {
@@ -121,7 +121,7 @@ instance "capsul::config" "test_capsule" {
         "config" {
             "pidsMax" = 20
             "memMax" = 4096
-            "netClsId" = var.testcon_clsid
+            "netClsId" = var.testcapsule_clsid
             "terminateOnClose" = true
         }
     }
@@ -153,7 +153,7 @@ The schema for the inbuilt support is:
 
 *Capsule (Config)*
 
-```JSON
+```HCL
 structure {
     "inbuilt" = true
     "containerId" = <String | V<String>>
@@ -168,7 +168,7 @@ structure {
 
 *Capsule (BoxFile)*
 
-```JSON
+```HCL
 structure {
     "inbuilt" = true
     "boxFileLocation" = <String | V<String>>
@@ -177,7 +177,7 @@ structure {
 
 *AWS (S3)*
 
-```JSON
+```HCL
 structure {
     "inbuilt" = true
     "instanceType" = "s3"
@@ -192,7 +192,7 @@ structure {
 
 *Docker (Dockerfile)*
 
-```JSON
+```HCL
 structure {
     "inbuil" = true
     "dockerfileLocation" = <String | V<String>>
@@ -201,7 +201,7 @@ structure {
 
 An example of a Capsule structure is
 
-```JSON
+```HCL
 variable "testcon_clsid" {
     "value" = 85831
 }
@@ -226,7 +226,7 @@ structure {
 
 Data declarations are "intakes" for data for a specific existing source such as a running container or active S3 bucket
 
-```JSON
+```HCL
 data "<"file" | "service">" "String<NAME>" {
     "reference" = String<'L' | 'W'>::<String | V<String>
     "schema" {...<B | C<T> | V>}
@@ -237,7 +237,7 @@ data "<"file" | "service">" "String<NAME>" {
 data.<String<TYPE>>.<String<NAME>>.<String<ATTRIUTE>>[.<String<ATTRIUTE>>]
 ```
 
-```JSON
+```HCL
 data "service" "service_manager_container" {
     "reference" = "L::/etc/capsule/containers/service_manager_container"
     "schema" {
@@ -265,7 +265,7 @@ instance "test_inst_type" "example_inst" {
 
 Captures define the source code for instances
 
-```JSON
+```HCL
 capture "String<NAME>" {
     "source" = <String | V<String>>
     "hasDependency" = [
@@ -277,7 +277,7 @@ capture "String<NAME>" {
 
 For example
 
-```JSON
+```HCL
 variable "service_manager_net_id" {
     value = 2586425
 }
@@ -290,7 +290,7 @@ capture "capsule" {
     "handler" = "capsule"
 }
 
-intstance "capsule" "test_continer" {
+instance "capsule" "test_continer" {
     "hasDependency" = []
     "count" = 2
     structure {
@@ -305,5 +305,3 @@ intstance "capsule" "test_continer" {
     }
 }
 ```
-
----
