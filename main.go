@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/EngineersBox/Schematic/cli"
 	"log"
 
+	"github.com/EngineersBox/ModularCLI/cli"
 	"github.com/EngineersBox/Schematic/schema"
 )
 
@@ -116,7 +116,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	schematicCli.Parse()
+	err = schematicCli.Parse()
+	if err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println(*schematicCli.Commands["plan"].Flags["sch"].GetString())
 	fmt.Println(CapsuleConfig.Schema["containerId"])
 }
