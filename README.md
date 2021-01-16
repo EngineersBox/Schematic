@@ -114,13 +114,13 @@ instance "capsule::config" "test_capsule" {
     hasDependency = []
     count = 2
     inbuilt = true
-        containerId = "testContainer"
-        config = {
-            pidsMax = 20
-            memMax = 4096
-            netClsId = var.testcapsule_clsid
-            terminateOnClose = true
-      }
+    containerId = "testContainer"
+    config = {
+        pidsMax = 20
+        memMax = 4096
+        netClsId = var.testcapsule_clsid
+        terminateOnClose = true
+    }
 }
 ```
 
