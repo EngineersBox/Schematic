@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/EngineersBox/ModularCLI/cli"
 	"github.com/EngineersBox/Schematic/schema"
@@ -61,14 +62,13 @@ var CapsuleConfig = &schema.Instance{
 var commands = map[string]cli.SubCommand{
 	"plan": {
 		ErrorHandler: flag.ExitOnError,
-		Arguments: []cli.Argument{
+		Arguments: []*cli.Argument{
 			{
 				Type:         cli.TypeString,
 				Name:         "sch",
 				DefaultValue: "",
 				HelpMsg:      "Schematic file (*.sch) to preview changes for",
 				Required:     true,
-				Optional:     false,
 			},
 			{
 				Type:         cli.TypeBool,
@@ -76,7 +76,6 @@ var commands = map[string]cli.SubCommand{
 				DefaultValue: false,
 				HelpMsg:      "Whether to output diff to file",
 				Required:     false,
-				Optional:     true,
 			},
 			{
 				Type:         cli.TypeString,
@@ -84,20 +83,24 @@ var commands = map[string]cli.SubCommand{
 				DefaultValue: "diff_out",
 				HelpMsg:      "File address to output diff to (requires --dtf=true) [default: diff_out]",
 				Required:     false,
-				Optional:     true,
 			},
 		},
 	},
 	"apply": {
 		ErrorHandler: flag.ExitOnError,
-		Arguments: []cli.Argument{
+		Arguments: []*cli.Argument{
 			{
 				Type:         cli.TypeString,
 				Name:         "sch",
 				DefaultValue: "",
 				HelpMsg:      "Schematic file (*.sch) to apply changes for",
 				Required:     true,
-				Optional:     false,
+				ValidateFunc: func(arg cli.TypedArgument) error {
+					if !strings.Contains(*arg.GetString(), ".sch") {
+						return fmt.Errorf("filetype must be .sch")
+					}
+					return nil
+				},
 			},
 			{
 				Type:         cli.TypeBool,
@@ -105,7 +108,6 @@ var commands = map[string]cli.SubCommand{
 				DefaultValue: true,
 				HelpMsg:      "Whether to show diff for changes [default: true]",
 				Required:     false,
-				Optional:     true,
 			},
 		},
 	},
