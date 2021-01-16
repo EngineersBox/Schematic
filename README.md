@@ -149,7 +149,7 @@ The schema for the inbuilt support is:
 | Field | Type |
 |-------|------|
 | inbuilt | `Boolean` |
-| fieldSet | `{...<B | C<T> | V>}` |
+| fieldSet | `{...<B> | C<T> | V>}` |
 
 *Capsule (Config)*
 
@@ -194,7 +194,7 @@ structure {
 
 ```HCL
 structure {
-    "inbuil" = true
+    "inbuilt" = true
     "dockerfileLocation" = <String | V<String>>
 }
 ```

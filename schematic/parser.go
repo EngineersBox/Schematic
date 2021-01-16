@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-var reservedKeywords []string = []string{
+var reservedKeywords = []string{
 	"instance",
 	"data",
 	"capture",
@@ -16,7 +16,7 @@ var reservedKeywords []string = []string{
 
 type SchemaType string
 
-var allTypes []SchemaType = []SchemaType{
+var allTypes = []SchemaType{
 	"String",
 	"Integer",
 	"Float",
@@ -27,11 +27,11 @@ var allTypes []SchemaType = []SchemaType{
 
 // ---- BASIC TYPES ----
 
-var BasicTypes []SchemaType = allTypes[:4]
+var BasicTypes = allTypes[:4]
 
 // ---- COMPLEX TYPES ----
 
-var ComplexTypes []SchemaType = allTypes[4:]
+var ComplexTypes = allTypes[4:]
 
 // ---- FIELD PAIR ----
 
