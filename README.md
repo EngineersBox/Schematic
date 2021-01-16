@@ -32,7 +32,7 @@ A terraform style IaC (Infrastructure as Code) manager of services
 
 ```HCL
 variable "someVar" {
-    "value" = <T>
+    value = <T>
 }
 ```
 
@@ -53,9 +53,9 @@ variable "anotherVar" = <B>
 
 A composite object of fields and values:
 
-```HCL
-"String" {
-    ..."String" = <B | C<T> | V>
+```Typescript
+<String> {
+    ...<String> = <B | C<T> | V>
 }
 ```
 
@@ -63,8 +63,8 @@ A composite object of fields and values:
 
 A list of values or composites
 
-```HCL
-"String" = [
+```Typescript
+<String> = [
     ...<B | C<T> | V>
 ]
 ```
@@ -95,13 +95,11 @@ Instances are paramterized and filled instantiations of a template, data are a s
 
 ```HCL
 instance "String<Name>" "String<Type>" {
-    "hasDependency" = [
+    hasDependency = [
         "String<INSTANCE NAME>"
     ]
-    "count" = Integer
-    "structure" {
-        <InstBody>
-    }
+    count = Integer
+    <InstBody>
 }
 ```
 
@@ -109,22 +107,20 @@ Example of an instance
 
 ```HCL
 variable "testcapsule_clsid" {
-    "value" = 85831
+    value = 85831
 }
 
 instance "capsule::config" "test_capsule" {
-    "hasDependency" = []
-    "count" = 2
-    structure {
-        "inbuilt" = true
-        "containerId" = "testContainer"
-        "config" {
-            "pidsMax" = 20
-            "memMax" = 4096
-            "netClsId" = var.testcapsule_clsid
-            "terminateOnClose" = true
-        }
-    }
+    hasDependency = []
+    count = 2
+    inbuilt = true
+        containerId = "testContainer"
+        config = {
+            pidsMax = 20
+            memMax = 4096
+            netClsId = var.testcapsule_clsid
+            terminateOnClose = true
+      }
 }
 ```
 
@@ -153,69 +149,59 @@ The schema for the inbuilt support is:
 
 *Capsule (Config)*
 
-```HCL
-structure {
-    "inbuilt" = true
-    "containerId" = <String | V<String>>
-    "config" {
-        "pidsMax" = <Integer | V<Integer>>
-        "memMax" = <Integer | V<Integer>>
-        "netClsId" = <Integer | V<Integer>>
-        "terminateOnClose" = <Boolean | V<Boolean>>
-    }
+```Typescript
+inbuilt = true
+containerId = <String | V<String>>
+config = {
+    pidsMax = <Integer | V<Integer>>
+    memMax = <Integer | V<Integer>>
+    netClsId = <Integer | V<Integer>>
+    terminateOnClose = <Boolean | V<Boolean>>
 }
 ```
 
 *Capsule (BoxFile)*
 
-```HCL
-structure {
-    "inbuilt" = true
-    "boxFileLocation" = <String | V<String>>
-}
+```Typescript
+inbuilt = true
+boxFileLocation = <String | V<String>>
 ```
 
 *AWS (S3)*
 
-```HCL
-structure {
-    "inbuilt" = true
-    "instanceType" = "s3"
-    "bucketName" = <String | V<String>>
-    "arn" = <String | V<String>>
-    "accessPolicy" {
-        "public" = <"ALL" | "NONE" | "GROUP">
-        "private" = <"ALL" | "NONE" | "GROUP" | "SELF">
-    }
+```Typescript
+inbuilt = true
+instanceType = "s3"
+bucketName = <String | V<String>>
+arn = <String | V<String>>
+accessPolicy = {
+    public = <"ALL" | "NONE" | "GROUP">
+    private = <"ALL" | "NONE" | "GROUP" | "SELF">
 }
 ```
 
 *Docker (Dockerfile)*
 
-```HCL
-structure {
-    "inbuilt" = true
-    "dockerfileLocation" = <String | V<String>>
-}
+```Typescript
+inbuilt = true
+dockerfileLocation = <String | V<String>>
 ```
 
 An example of a Capsule structure is
 
 ```HCL
 variable "testcon_clsid" {
-    "value" = 85831
+    value = 85831
 }
 
-...
-
-structure {
-    "inbuilt" = true
-    "containerId" = "testContainer"
-    "config" {
-        "pidsMax" = 20
-        "memMax" = 4096
-        "netClsId" = var.testcon_clsid
-        "terminateOnClose" = true
+instance "capsule::config" "test_capsule_structure" {
+    inbuilt = true
+    containerId = "testContainer"
+    config = {
+        pidsMax = 20
+        memMax = 4096
+        netClsId = var.testcon_clsid
+        terminateOnClose = true
     }
 }
 ```
@@ -226,35 +212,35 @@ structure {
 
 Data declarations are "intakes" for data for a specific existing source such as a running container or active S3 bucket
 
-```HCL
-data "<"file" | "service">" "String<NAME>" {
-    "reference" = String<'L' | 'W'>::<String | V<String>
-    "schema" {...<B | C<T> | V>}
+```Typescript
+data <"file" | "service"> "String<NAME>" {
+    reference = String<'L' | 'W'>::<String | V<String>
+    schema {...<B | C<T> | V>}
 }
 ```
 
-```typescript
+```Typescript
 data.<String<TYPE>>.<String<NAME>>.<String<ATTRIUTE>>[.<String<ATTRIUTE>>]
 ```
 
 ```HCL
 data "service" "service_manager_container" {
-    "reference" = "L::/etc/capsule/containers/service_manager_container"
-    "schema" {
-        "containerId" = <String | V<String>>
-        "proc" {
-            "pidsMax" = <Integer | V<Integer>>
-            "memMax" = <Integer | V<Integer>>
-            "terminateOnClose" = <Boolean | V<Boolean>>
+    reference = "L::/etc/capsule/containers/service_manager_container"
+    schema = {
+        containerId = <String | V<String>>
+        proc = {
+            pidsMax = <Integer | V<Integer>>
+            memMax = <Integer | V<Integer>>
+            terminateOnClose = <Boolean | V<Boolean>>
         }
-        "network" {
-            "netClsId" = <Integer | V<Integer>>
+        network = {
+            netClsId = <Integer | V<Integer>>
         }
     }
 }
 
 instance "test_inst_type" "example_inst" {
-    "someProperty" = data.service.service_manager_container.network.netClsId
+    someProperty = data.service.service_manager_container.network.netClsId
     ...
 }
 ```
@@ -267,11 +253,11 @@ Captures define the source code for instances
 
 ```HCL
 capture "String<NAME>" {
-    "source" = <String | V<String>>
-    "hasDependency" = [
+    source = <String | V<String>>
+    hasDependency = [
         ...<String | V<String>>
     ]
-    "handler" = <String | V<String>>
+    handler = <String | V<String>>
 }
 ```
 
@@ -283,25 +269,23 @@ variable "service_manager_net_id" {
 }
 
 capture "capsule" {
-    "source" = "github.com/EngineersBox/Capsule"
-    "hasDependency" = [
+    source = "github.com/EngineersBox/Capsule"
+    hasDependency = [
         "github.com/google/golang"
     ]
-    "handler" = "capsule"
+    handler = "capsule"
 }
 
-instance "capsule" "test_continer" {
-    "hasDependency" = []
-    "count" = 2
-    structure {
-        "inbuilt" = true
-        "containerId" = "service_id_573"
-        "config" {
-            "pidsMax" = 20
-            "memMax" = 4096
-            "netClsId" = var.service_manager_net_id
-            "terminateOnClose" = true
-        }
+instance "capsule" "test_container" {
+    hasDependency = []
+    count = 2
+    inbuilt = true
+    containerId = "service_id_573"
+    config = {
+        pidsMax = 20
+        memMax = 4096
+        netClsId = var.service_manager_net_id
+        terminateOnClose = true
     }
 }
 ```
