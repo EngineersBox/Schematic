@@ -28,9 +28,16 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 	if isWhitespace(ch) {
 		s.unread()
 		return s.scanWhitespace()
-	} else if isLetter(ch) {
+	} else if isLetter(ch) || isDigit(ch) {
 		s.unread()
 		return s.scanIdent()
+	} else if isQuotation(ch) {
+		tok, lit := s.scanIdent()
+		ch = s.read()
+		if isQuotation(ch) {
+			return tok, lit
+		}
+		return ILLEGAL, string(ch)
 	}
 
 	// Otherwise read the individual character.
@@ -53,10 +60,14 @@ func (s *Scanner) Scan() (tok Token, lit string) {
 		return COMMA, string(ch)
 	case '.':
 		return PERIOD, string(ch)
+	case '=':
+		return EQUALS, string(ch)
 	}
 
 	return ILLEGAL, string(ch)
 }
+
+func isQuotation(ch rune) bool { return ch == '"' || ch == '\'' }
 
 // scanWhitespace consumes the current rune and all contiguous whitespace.
 func (s *Scanner) scanWhitespace() (tok Token, lit string) {

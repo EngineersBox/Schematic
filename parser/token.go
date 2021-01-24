@@ -11,10 +11,6 @@ const (
 	// Literals
 	IDENT
 
-	// Composites
-	BLOCK
-	ARRAY
-
 	// Misc characters
 	OPENBRACE     // {
 	CLOSEDBRACE   // }
@@ -24,6 +20,7 @@ const (
 	CLOSEDPAREN   // )
 	COMMA         // ,
 	PERIOD        // .
+	EQUALS        // =
 
 	// Keywords
 	INSTANCE

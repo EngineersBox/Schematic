@@ -1,10 +1,20 @@
 package parser
 
-import "io"
+import (
+	"fmt"
+	"github.com/EngineersBox/Schematic/schema"
+	"github.com/EngineersBox/Schematic/state"
+	"github.com/zclconf/go-cty/cty"
+	"io"
+	"strconv"
+	"strings"
+)
+
+const providerReferenceDelimiter = "::"
 
 type ParsedState struct {
-	Res    map[string]interface{}
-	Errors []error
+	Variables map[string]*state.Variable
+	Instances map[string]*state.Instance
 }
 
 type Parser struct {
@@ -22,8 +32,100 @@ func NewParser(r io.Reader) *Parser {
 }
 
 // Parse parses tokens into a map of declarations
-func (p *Parser) Parse() *ParsedState {
-	return nil
+func (p *Parser) Parse() (*ParsedState, error) {
+	schem := &ParsedState{
+		Variables: make(map[string]*state.Variable),
+		Instances: make(map[string]*state.Instance),
+	}
+	token, _ := p.scanIgnoreWhitespace()
+	switch token {
+	case VARIABLE:
+		name, newVar, err := p.parseVariable()
+		if err != nil {
+			return nil, err
+		}
+		schem.Variables[name] = newVar
+	case INSTANCE:
+		name, newInstance, err := p.parseInstance()
+		if err != nil {
+			return nil, err
+		}
+		schem.Instances[name] = newInstance
+	}
+	return schem, nil
+}
+
+func (p *Parser) parseVariable() (string, *state.Variable, error) {
+	newVar := &state.Variable{}
+	token, name := p.scanIgnoreWhitespace()
+	if token != IDENT {
+		return "", nil, fmt.Errorf("not a valid variable name")
+	}
+	newVar.Name = name
+	tok, lit := p.scanIgnoreWhitespace()
+	if tok != OPENBRACE {
+		return "", nil, fmt.Errorf("missing open brace in variable declaration")
+	}
+	tok, lit = p.scanIgnoreWhitespace()
+	if tok != IDENT || lit != "value" {
+		return "", nil, fmt.Errorf("variable body must only have value declaration")
+	}
+	tok, lit = p.scanIgnoreWhitespace()
+	if tok != EQUALS {
+		return "", nil, fmt.Errorf("missing assignment operator '=' in variable declaration")
+	}
+	tok, lit = p.scanIgnoreWhitespace()
+	if tok != IDENT {
+		return "", nil, fmt.Errorf("variable value must only contain a literal")
+	}
+	val, err := strconv.ParseFloat(lit, 10)
+	if err != nil {
+		val, err := strconv.ParseInt(lit, 10, 10)
+		if err != nil {
+			newVar.Value = cty.StringVal(lit)
+			newVar.BaseType = schema.TypeString
+		} else {
+			newVar.Value = cty.NumberIntVal(val)
+			newVar.BaseType = schema.TypeInt
+		}
+	} else {
+		newVar.Value = cty.NumberFloatVal(val)
+		newVar.BaseType = schema.TypeFloat
+	}
+	tok, lit = p.scanIgnoreWhitespace()
+	if tok != CLOSEDBRACE {
+		return "", nil, fmt.Errorf("missing closing brace in variable declaration")
+	}
+	return name, newVar, nil
+}
+
+func (p *Parser) parseInstance() (string, *state.Instance, error) {
+	newInst := &state.Instance{}
+	tok, lit := p.scanIgnoreWhitespace()
+	if tok != IDENT || strings.Contains(lit, providerReferenceDelimiter) {
+		return "", nil, fmt.Errorf("invalid provider reference for instance")
+	}
+	provRef := strings.SplitAfter(lit, providerReferenceDelimiter)
+	if len(provRef) != 2 {
+		return "", nil, fmt.Errorf("provider reference must be of the form \"<provider>::<type>\"")
+	}
+	newInst.Provider = provRef[0]
+	newInst.Type = provRef[1]
+	tok, name := p.scanIgnoreWhitespace()
+	if tok != IDENT {
+		return "", nil, fmt.Errorf("not a valid variable name")
+	}
+	newInst.Name = name
+	tok, lit = p.scanIgnoreWhitespace()
+	if tok != OPENBRACE {
+		return "", nil, fmt.Errorf("missing open brace in instance declaration")
+	}
+	// TODO: Parse instance body
+	tok, lit = p.scanIgnoreWhitespace()
+	if tok != CLOSEDBRACE {
+		return "", nil, fmt.Errorf("missing losing brace in instance declaration")
+	}
+	return name, newInst, nil
 }
 
 // scan returns the next token from the underlying scanner.

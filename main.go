@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
-	"strings"
-
 	"github.com/EngineersBox/ModularCLI/cli"
+	"github.com/EngineersBox/Schematic/parser"
 	"github.com/EngineersBox/Schematic/schema"
+	"log"
+	"os"
+	"strings"
 )
 
 var CapsuleConfig = &schema.Instance{
@@ -64,13 +65,6 @@ var commands = map[string]cli.SubCommand{
 		ErrorHandler: flag.ExitOnError,
 		Arguments: []*cli.Argument{
 			{
-				Type:         cli.TypeString,
-				Name:         "sch",
-				DefaultValue: "",
-				HelpMsg:      "Schematic file (*.sch) to preview changes for",
-				Required:     true,
-			},
-			{
 				Type:         cli.TypeBool,
 				Name:         "dtf",
 				DefaultValue: false,
@@ -85,23 +79,23 @@ var commands = map[string]cli.SubCommand{
 				Required:     false,
 			},
 		},
-	},
-	"apply": {
-		ErrorHandler: flag.ExitOnError,
-		Arguments: []*cli.Argument{
+		Parameters: []*cli.Parameter{
 			{
-				Type:         cli.TypeString,
-				Name:         "sch",
-				DefaultValue: "",
-				HelpMsg:      "Schematic file (*.sch) to apply changes for",
-				Required:     true,
-				ValidateFunc: func(arg cli.TypedArgument) error {
+				Type:     cli.TypeString,
+				Name:     "sch",
+				Position: 0,
+				ValidateFunc: func(arg cli.Parameter) error {
 					if !strings.Contains(*arg.GetString(), ".sch") {
 						return fmt.Errorf("filetype must be .sch")
 					}
 					return nil
 				},
 			},
+		},
+	},
+	"apply": {
+		ErrorHandler: flag.ExitOnError,
+		Arguments: []*cli.Argument{
 			{
 				Type:         cli.TypeBool,
 				Name:         "diff",
@@ -110,10 +104,26 @@ var commands = map[string]cli.SubCommand{
 				Required:     false,
 			},
 		},
+		Parameters: []*cli.Parameter{
+			{
+				Type:     cli.TypeString,
+				Name:     "sch",
+				Position: 0,
+				ValidateFunc: func(arg cli.Parameter) error {
+					if !strings.Contains(*arg.GetString(), ".sch") {
+						return fmt.Errorf("filetype must be .sch")
+					}
+					return nil
+				},
+			},
+		},
 	},
 }
 
+var schemaReferences = make(map[string]interface{})
+
 func main() {
+	schemaReferences["capsule::config"] = *CapsuleConfig
 	schematicCli, err := cli.CreateCLI(commands)
 	if err != nil {
 		log.Fatal(err)
@@ -122,6 +132,22 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(*schematicCli.Commands["plan"].Flags["sch"].GetString())
-	fmt.Println(CapsuleConfig.Schema["containerId"])
+
+	f, err := os.Open(*schematicCli.Commands["plan"].Params["sch"].GetString())
+	if err != nil {
+		panic(err)
+	}
+
+	p := parser.NewParser(f)
+	ps, err := p.Parse()
+	if err != nil {
+		panic(err)
+	}
+
+	newVar := ps.Variables["testcapsule_clsid"]
+	if newVar.BaseType == schema.TypeFloat || newVar.BaseType == schema.TypeInt {
+		fmt.Println(newVar.Value.AsBigFloat())
+	} else if newVar.BaseType == schema.TypeString {
+		fmt.Println(newVar.Value.AsString())
+	}
 }
