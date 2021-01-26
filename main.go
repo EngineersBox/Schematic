@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/EngineersBox/ModularCLI/cli"
 	"github.com/EngineersBox/Schematic/parser"
+	"github.com/EngineersBox/Schematic/providers"
 	"github.com/EngineersBox/Schematic/schema"
+	"github.com/EngineersBox/Schematic/state"
 	"log"
 	"os"
 	"strings"
@@ -32,28 +34,26 @@ var CapsuleConfig = &schema.Instance{
 			Type:     schema.TypeMap,
 			Computed: false,
 			Required: true,
-			Elem: &schema.Instance{
-				Schema: map[string]*schema.Schema{
-					"pidsMax": {
-						Type:     schema.TypeInt,
-						Computed: false,
-						Required: false,
-					},
-					"memMax": {
-						Type:     schema.TypeInt,
-						Computed: false,
-						Required: false,
-					},
-					"netClsId": {
-						Type:     schema.TypeInt,
-						Computed: false,
-						Required: false,
-					},
-					"terminateOnClose": {
-						Type:     schema.TypeBool,
-						Computed: false,
-						Required: false,
-					},
+			Elem: map[string]*schema.Schema{
+				"pidsMax": {
+					Type:     schema.TypeInt,
+					Computed: false,
+					Required: false,
+				},
+				"memMax": {
+					Type:     schema.TypeInt,
+					Computed: false,
+					Required: false,
+				},
+				"netClsId": {
+					Type:     schema.TypeInt,
+					Computed: false,
+					Required: false,
+				},
+				"terminateOnClose": {
+					Type:     schema.TypeBool,
+					Computed: false,
+					Required: false,
 				},
 			},
 		},
@@ -123,7 +123,12 @@ var commands = map[string]cli.SubCommand{
 var schemaReferences = make(map[string]interface{})
 
 func main() {
+	providers.InstalledProviders["capsule"] = &schema.Provider{}
+	providers.InstalledProviders["capsule"].InstancesMap = make(map[string]*schema.Instance)
+	providers.InstalledProviders["capsule"].InstancesMap["config"] = CapsuleConfig
+
 	schemaReferences["capsule::config"] = *CapsuleConfig
+
 	schematicCli, err := cli.CreateCLI(commands)
 	if err != nil {
 		log.Fatal(err)
@@ -150,4 +155,9 @@ func main() {
 	} else if newVar.BaseType == schema.TypeString {
 		fmt.Println(newVar.Value.AsString())
 	}
+	value, err := state.GetInstanceField([]string{"config", "netClsId"}, ps.Instances["test_capsule"].Fields)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("test_capsule->config->netClsId: %s\n", value)
 }
