@@ -82,10 +82,10 @@ var commands = map[string]cli.SubCommand{
 		Parameters: []*cli.Parameter{
 			{
 				Type:     cli.TypeString,
-				Name:     "sch",
+				Name:     "schm",
 				Position: 0,
 				ValidateFunc: func(arg cli.Parameter) error {
-					if !strings.Contains(*arg.GetString(), ".sch") {
+					if !strings.Contains(*arg.GetString(), ".schm") {
 						return fmt.Errorf("filetype must be .sch")
 					}
 					return nil
@@ -107,11 +107,11 @@ var commands = map[string]cli.SubCommand{
 		Parameters: []*cli.Parameter{
 			{
 				Type:     cli.TypeString,
-				Name:     "sch",
+				Name:     "schm",
 				Position: 0,
 				ValidateFunc: func(arg cli.Parameter) error {
-					if !strings.Contains(*arg.GetString(), ".sch") {
-						return fmt.Errorf("filetype must be .sch")
+					if !strings.Contains(*arg.GetString(), ".schm") {
+						return fmt.Errorf("filetype must be .schm")
 					}
 					return nil
 				},
@@ -138,7 +138,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	f, err := os.Open(*schematicCli.Commands["plan"].Params["sch"].GetString())
+	f, err := os.Open(*schematicCli.Commands["plan"].Params["schm"].GetString())
 	if err != nil {
 		panic(err)
 	}
