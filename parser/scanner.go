@@ -18,7 +18,7 @@ func NewScanner(r io.Reader) *Scanner {
 }
 
 // Scan returns the next token and literal value.
-func (s *Scanner) Scan(returnOnCR bool) (tok Token, lit string) {
+func (s *Scanner) Scan(returnOnNL bool) (tok Token, lit string) {
 	// Read the next rune.
 	ch := s.read()
 
@@ -27,12 +27,12 @@ func (s *Scanner) Scan(returnOnCR bool) (tok Token, lit string) {
 	// If we see a digit then consume as a number.
 	if isWhitespace(ch) {
 		s.unread()
-		return s.scanWhitespace(returnOnCR)
+		return s.scanWhitespace(returnOnNL)
 	} else if isLetter(ch) || isDigit(ch) {
 		s.unread()
-		return s.scanIdent(returnOnCR)
+		return s.scanIdent(returnOnNL)
 	} else if isQuotation(ch) {
-		tok, lit := s.scanIdent(returnOnCR)
+		tok, lit := s.scanIdent(returnOnNL)
 		ch = s.read()
 		if isQuotation(ch) {
 			return tok, lit
@@ -68,7 +68,7 @@ func (s *Scanner) Scan(returnOnCR bool) (tok Token, lit string) {
 func isQuotation(ch rune) bool { return ch == '"' || ch == '\'' }
 
 // scanWhitespace consumes the current rune and all contiguous whitespace.
-func (s *Scanner) scanWhitespace(returnOnCR bool) (tok Token, lit string) {
+func (s *Scanner) scanWhitespace(returnOnNL bool) (tok Token, lit string) {
 	// Create a buffer and read the current character into it.
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
@@ -78,7 +78,7 @@ func (s *Scanner) scanWhitespace(returnOnCR bool) (tok Token, lit string) {
 	for {
 		if ch := s.read(); ch == eof {
 			break
-		} else if (returnOnCR && ch != '\n') || !isWhitespace(ch) {
+		} else if (returnOnNL && ch != '\n') || !isWhitespace(ch) {
 			s.unread()
 			break
 		} else {
@@ -90,7 +90,7 @@ func (s *Scanner) scanWhitespace(returnOnCR bool) (tok Token, lit string) {
 }
 
 // scanIdent consumes the current rune and all contiguous ident runes.
-func (s *Scanner) scanIdent(returnOnCR bool) (tok Token, lit string) {
+func (s *Scanner) scanIdent(returnOnNL bool) (tok Token, lit string) {
 	// Create a buffer and read the current character into it.
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
@@ -101,7 +101,7 @@ func (s *Scanner) scanIdent(returnOnCR bool) (tok Token, lit string) {
 		ch := s.read()
 		if ch == eof {
 			break
-		} else if (returnOnCR && ch == '\n') || (!isLetter(ch) && !isDigit(ch) && !isSpecial(ch)) {
+		} else if (returnOnNL && ch == '\n') || (!isLetter(ch) && !isDigit(ch) && !isSpecial(ch)) {
 			s.unread()
 			break
 		} else {

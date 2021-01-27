@@ -160,4 +160,9 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Printf("test_capsule->config->netClsId: %s\n", value)
+	value, err = state.GetInstanceField([]string{"containerId"}, ps.Instances["test_capsule"].Fields)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("test_capsule->containerId: %s\n", value)
 }
