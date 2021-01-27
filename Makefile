@@ -1,9 +1,10 @@
 BIN_NAME="main"
-OUT_DIR="out/$(BIN_NAME)"
+OUT_DIR="out"
 SRC="main.go"
 
 build:
-	@go build -o $(OUT_DIR) $(SRC)
+	@mkdir -p out
+	@go build -v -o $(OUT_DIR)/$(BIN_NAME) $(SRC)
 
 exec:
 	@./$(OUT_DIR)
