@@ -1,5 +1,7 @@
 # Schematic
 
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/EngineersBox/Schematic/Go?style=for-the-badge)
+
 A terraform style IaC (Infrastructure as Code) manager of services
 
 ## Declaration Language
