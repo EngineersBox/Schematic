@@ -22,4 +22,4 @@ jobs:
       run: make build
 
     - name: Run
-      run: ./out/main plan test/test/capsule_test_instance.sch
+      run: ./out/main plan test/capsule_test_instance.sch
