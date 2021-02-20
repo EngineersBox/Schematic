@@ -2,8 +2,7 @@ package schema
 
 import (
 	"context"
-
-	"github.com/EngineersBox/Schematic/schematic"
+	"github.com/EngineersBox/Schematic/state"
 )
 
 var ReservedDataSourceFields = []string{
@@ -43,15 +42,15 @@ type Instance struct {
 	Description string
 }
 
-type CreateFunc func(*InstanceData, interface{}) error
-type ReadFunc func(*InstanceData, interface{}) error
-type UpdateFunc func(*InstanceData, interface{}) error
-type DeleteFunc func(*InstanceData, interface{}) error
-type ExistsFunc func(*InstanceData, interface{}) (bool, error)
+type CreateFunc func(*state.InstanceData, interface{}) error
+type ReadFunc func(*state.InstanceData, interface{}) error
+type UpdateFunc func(*state.InstanceData, interface{}) error
+type DeleteFunc func(*state.InstanceData, interface{}) error
+type ExistsFunc func(*state.InstanceData, interface{}) (bool, error)
 
-type CustomizeDiffFunc func(context.Context, *schematic.InstanceDiff, interface{}) error
+type CustomizeDiffFunc func(context.Context, *state.InstanceDiff, interface{}) error
 
-func (r *Instance) create(ctx context.Context, d *InstanceData, meta interface{}) error {
+func (r *Instance) create(ctx context.Context, d *state.InstanceData, meta interface{}) error {
 	if r.Create != nil {
 		if err := r.Create(d, meta); err != nil {
 			return err
@@ -63,7 +62,7 @@ func (r *Instance) create(ctx context.Context, d *InstanceData, meta interface{}
 	return nil
 }
 
-func (r *Instance) read(ctx context.Context, d *InstanceData, meta interface{}) error {
+func (r *Instance) read(ctx context.Context, d *state.InstanceData, meta interface{}) error {
 	if r.Read != nil {
 		if err := r.Read(d, meta); err != nil {
 			return err
@@ -75,7 +74,7 @@ func (r *Instance) read(ctx context.Context, d *InstanceData, meta interface{}) 
 	return nil
 }
 
-func (r *Instance) update(ctx context.Context, d *InstanceData, meta interface{}) error {
+func (r *Instance) update(ctx context.Context, d *state.InstanceData, meta interface{}) error {
 	if r.Update != nil {
 		if err := r.Update(d, meta); err != nil {
 			return err
@@ -87,7 +86,7 @@ func (r *Instance) update(ctx context.Context, d *InstanceData, meta interface{}
 	return nil
 }
 
-func (r *Instance) delete(ctx context.Context, d *InstanceData, meta interface{}) error {
+func (r *Instance) delete(ctx context.Context, d *state.InstanceData, meta interface{}) error {
 	if r.Delete != nil {
 		if err := r.Delete(d, meta); err != nil {
 			return err
@@ -100,31 +99,18 @@ func (r *Instance) delete(ctx context.Context, d *InstanceData, meta interface{}
 }
 
 // Apply creates, updates, and/or deletes a resource.
-func (r *Instance) Apply(ctx context.Context, s *schematic.InstanceState, d *schematic.InstanceDiff, meta interface{}) (*schematic.InstanceState, error) {
+func (r *Instance) Apply(ctx context.Context, s *Instance, d *state.InstanceDiff, meta interface{}) error {
 	// TODO: Implement this method
-	return nil, nil
+	return nil
 }
 
-func (r *Instance) Data(s *schematic.InstanceState) *InstanceData {
-	result, err := schemaMap(r.Schema).Data(s, nil)
-	if err != nil {
-		// At the time of writing, this isn't possible (Data never returns
-		// non-nil errors). We panic to find this in the future if we have to.
-		// I don't see a reason for Data to ever return an error.
-		panic(err)
-	}
-
-	// load the Resource timeouts
-	result.timeouts = r.Timeouts
-	if result.timeouts == nil {
-		result.timeouts = &InstanceTimeout{}
-	}
-
-	return result
+func (r *Instance) Data(s *InstanceState) *state.InstanceData {
+	// TODO: Implement this
+	return nil
 }
 
 // Noop is a convenience implementation of resource function which takes
 // no action and returns no error.
-func Noop(*InstanceData, interface{}) error {
+func Noop(*state.InstanceData, interface{}) error {
 	return nil
 }

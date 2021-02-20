@@ -1,4 +1,4 @@
-package state
+package schema
 
 import (
 	"fmt"
@@ -33,11 +33,7 @@ func (s *InstanceState) init() {
 	}
 }
 
-func (s *InstanceState) GetAttributeNesting(attributeNesting []string) (interface{}, error) {
-	return getInstanceAttributeNesting(attributeNesting, s.Attributes)
-}
-
-func getInstanceAttributeNesting(attributeNesting []string, attributes map[string]interface{}) (interface{}, error) {
+func GetInstanceAttributeNesting(attributeNesting []string, attributes map[string]interface{}) (interface{}, error) {
 	if len(attributeNesting) == 0 {
 		return nil, fmt.Errorf("must have at least 1 field specified")
 	}
@@ -52,5 +48,5 @@ func getInstanceAttributeNesting(attributeNesting []string, attributes map[strin
 	if !ok {
 		return nil, fmt.Errorf("no such field: %s", attributeNesting[0])
 	}
-	return getInstanceAttributeNesting(attributeNesting[1:], nestedField)
+	return GetInstanceAttributeNesting(attributeNesting[1:], nestedField)
 }

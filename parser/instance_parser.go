@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"github.com/EngineersBox/Schematic/collection"
 	"github.com/EngineersBox/Schematic/providers"
 	"github.com/EngineersBox/Schematic/schema"
 	"github.com/EngineersBox/Schematic/state"
@@ -14,8 +15,8 @@ const (
 	fieldNestingDelimiter   = "->"
 )
 
-func (p *Parser) parseInstance(schem *ParsedState) (string, *state.Instance, error) {
-	newInst := &state.Instance{}
+func (p *Parser) parseInstance(schem *state.ParsedState) (string, *state.InstanceState, error) {
+	newInst := &state.InstanceState{}
 	tok, lit := p.scanLine()
 	if tok[0] != IDENT || !strings.Contains(lit[0], providerReferenceDelimiter) {
 		return "", nil, fmt.Errorf("invalid provider reference for instance: " + lit[0])
@@ -27,7 +28,7 @@ func (p *Parser) parseInstance(schem *ParsedState) (string, *state.Instance, err
 	if tok[1] != IDENT {
 		return "", nil, fmt.Errorf("not a valid variable name")
 	}
-	newInst.Name = lit[1]
+	newInst.ID = lit[1]
 	if tok[2] != OPENBRACE {
 		return "", nil, fmt.Errorf("missing open brace in instance declaration")
 	}
@@ -38,7 +39,7 @@ func (p *Parser) parseInstance(schem *ParsedState) (string, *state.Instance, err
 	return lit[1], newInst, nil
 }
 
-func (p *Parser) parseInstanceBody(newInst *state.Instance, providerReference *ProviderReference, schem *ParsedState) error {
+func (p *Parser) parseInstanceBody(newInst *state.InstanceState, providerReference *ProviderReference, schem *state.ParsedState) error {
 	provider := providers.InstalledProviders[providerReference.Provider]
 	if provider == nil {
 		return fmt.Errorf("not such provider: %s", providerReference.Provider)
@@ -50,7 +51,7 @@ func (p *Parser) parseInstanceBody(newInst *state.Instance, providerReference *P
 	instanceSchema := instanceReference.Schema
 	newInst.Provider = providerReference.Provider
 	newInst.Type = providerReference.Kind
-	newInst.Fields = make(map[string]interface{})
+	newInst.Attributes = make(map[string]interface{})
 	blockDepth := 0
 	var nesting []string
 	for {
@@ -81,7 +82,7 @@ func (p *Parser) parseInstanceBody(newInst *state.Instance, providerReference *P
 	return nil
 }
 
-func updateInstanceFields(nesting []string, literals []string, instanceSchema map[string]*schema.Schema, schem *ParsedState, providerReference *ProviderReference, newInst *state.Instance) error {
+func updateInstanceFields(nesting []string, literals []string, instanceSchema map[string]*schema.Schema, schem *state.ParsedState, providerReference *ProviderReference, newInst *state.InstanceState) error {
 	currentNesting := append(nesting, literals[0])
 	if !validateSchemaFields(currentNesting, instanceSchema) {
 		return fmt.Errorf(
@@ -94,22 +95,22 @@ func updateInstanceFields(nesting []string, literals []string, instanceSchema ma
 	if strings.Contains(assignableValue, variableReferencePrefix) {
 		variableReference := strings.TrimPrefix(assignableValue, variableReferencePrefix)
 		variableType := schem.Variables[variableReference].BaseType
-		if variableType == schema.TypeInt {
+		if variableType == schematic.TypeInt {
 			val, _ := schem.Variables[variableReference].Value.AsBigFloat().Int64()
 			assignableValue = strconv.FormatInt(val, 10)
-		} else if variableType == schema.TypeFloat {
+		} else if variableType == schematic.TypeFloat {
 			val, _ := schem.Variables[variableReference].Value.AsBigFloat().Float64()
 			assignableValue = fmt.Sprintf("%f", val)
-		} else if variableType == schema.TypeBool {
+		} else if variableType == schematic.TypeBool {
 			assignableValue = schem.Variables[variableReference].Value.AsString()
 		} else {
 			return fmt.Errorf("unknown variable type: %v", variableType)
 		}
 	}
-	updatedFields, err := recurseAssign(currentNesting, assignableValue, newInst.Fields)
+	updatedFields, err := recurseAssign(currentNesting, assignableValue, newInst.Attributes)
 	if err != nil {
 		return err
 	}
-	newInst.Fields = updatedFields
+	newInst.Attributes = updatedFields
 	return nil
 }

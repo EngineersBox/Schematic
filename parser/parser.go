@@ -6,11 +6,6 @@ import (
 	"strings"
 )
 
-type ParsedState struct {
-	Variables map[string]*state.Variable
-	Instances map[string]*state.Instance
-}
-
 type Parser struct {
 	s   *Scanner
 	buf struct {
@@ -26,10 +21,10 @@ func NewParser(r io.Reader) *Parser {
 }
 
 // Parse parses tokens into a map of declarations
-func (p *Parser) Parse() (*ParsedState, error) {
-	schem := &ParsedState{
+func (p *Parser) Parse() (*state.ParsedState, error) {
+	schem := &state.ParsedState{
 		Variables: make(map[string]*state.Variable),
-		Instances: make(map[string]*state.Instance),
+		Instances: make(map[string]*state.InstanceData),
 	}
 	for {
 		token, _ := p.scanIgnoreWhitespace(false)
@@ -48,7 +43,7 @@ func (p *Parser) Parse() (*ParsedState, error) {
 			if err != nil {
 				return nil, err
 			}
-			schem.Instances[name] = newInstance
+			schem.Instances[name] = state.NewInstanceData(newInstance, nil)
 		}
 	}
 	return schem, nil

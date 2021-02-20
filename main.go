@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/EngineersBox/ModularCLI/cli"
+	"github.com/EngineersBox/Schematic/collection"
 	"github.com/EngineersBox/Schematic/parser"
 	"github.com/EngineersBox/Schematic/providers"
 	"github.com/EngineersBox/Schematic/schema"
@@ -21,37 +22,37 @@ var CapsuleConfig = &schema.Instance{
 	Description: "A Capsule resource instance",
 	Schema: map[string]*schema.Schema{
 		"inbuilt": {
-			Type:     schema.TypeBool,
+			Type:     schematic.TypeBool,
 			Computed: false,
 			Required: true,
 		},
 		"containerId": {
-			Type:     schema.TypeString,
+			Type:     schematic.TypeString,
 			Computed: false,
 			Required: true,
 		},
 		"config": {
-			Type:     schema.TypeMap,
+			Type:     schematic.TypeMap,
 			Computed: false,
 			Required: true,
 			Elem: map[string]*schema.Schema{
 				"pidsMax": {
-					Type:     schema.TypeInt,
+					Type:     schematic.TypeInt,
 					Computed: false,
 					Required: false,
 				},
 				"memMax": {
-					Type:     schema.TypeInt,
+					Type:     schematic.TypeInt,
 					Computed: false,
 					Required: false,
 				},
 				"netClsId": {
-					Type:     schema.TypeInt,
+					Type:     schematic.TypeInt,
 					Computed: false,
 					Required: false,
 				},
 				"terminateOnClose": {
-					Type:     schema.TypeBool,
+					Type:     schematic.TypeBool,
 					Computed: false,
 					Required: false,
 				},
@@ -63,7 +64,7 @@ var CapsuleConfig = &schema.Instance{
 var commands = map[string]cli.SubCommand{
 	"plan": {
 		ErrorHandler: flag.ExitOnError,
-		Arguments: []*cli.Argument{
+		Flags: []*cli.Flag{
 			{
 				Type:         cli.TypeBool,
 				Name:         "dtf",
@@ -95,7 +96,7 @@ var commands = map[string]cli.SubCommand{
 	},
 	"apply": {
 		ErrorHandler: flag.ExitOnError,
-		Arguments: []*cli.Argument{
+		Flags: []*cli.Flag{
 			{
 				Type:         cli.TypeBool,
 				Name:         "diff",
@@ -118,12 +119,45 @@ var commands = map[string]cli.SubCommand{
 			},
 		},
 	},
+	"install": {
+		ErrorHandler: flag.ExitOnError,
+		Flags:        nil,
+		Parameters: []*cli.Parameter{
+			{
+				Type:     cli.TypeString,
+				Name:     "install_provider",
+				Position: 0,
+				ValidateFunc: func(arg cli.Parameter) error {
+					_, exists := internalRegistry[*arg.GetString()]
+					if !exists {
+						return fmt.Errorf("invalid provider: %s", *arg.GetString())
+					}
+					return nil
+				},
+			},
+		},
+	},
 }
 
-var schemaReferences = make(map[string]interface{})
+var (
+	schemaReferences     = make(map[string]interface{})
+	operationalDirectory = "operational"
+	stateOut             = fmt.Sprintf("%s/state.json", operationalDirectory)
+	internalRegistry     = map[string]string{
+		"capsule": "github.com/engineersbox/terraform_provider_capsule",
+		"aws":     "github.com/aws/terraform_provider_aws",
+	}
+)
+
+func createDirIfNotExists(path string, mode os.FileMode) error {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return os.Mkdir(path, mode)
+	}
+	return nil
+}
 
 func main() {
-	providers.InstalledProviders["capsule"] = &schema.Provider{}
+	providers.InstalledProviders["capsule"] = &providers.Provider{}
 	providers.InstalledProviders["capsule"].InstancesMap = make(map[string]*schema.Instance)
 	providers.InstalledProviders["capsule"].InstancesMap["config"] = CapsuleConfig
 
@@ -149,20 +183,37 @@ func main() {
 		panic(err)
 	}
 
+	newState := &state.State{
+		Filename: stateOut,
+	}
+	err = newState.Init(ps)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	newVar := ps.Variables["testcapsule_clsid"]
-	if newVar.BaseType == schema.TypeFloat || newVar.BaseType == schema.TypeInt {
+	if newVar.BaseType == schematic.TypeFloat || newVar.BaseType == schematic.TypeInt {
 		fmt.Println(newVar.Value.AsBigFloat())
-	} else if newVar.BaseType == schema.TypeString {
+	} else if newVar.BaseType == schematic.TypeString {
 		fmt.Println(newVar.Value.AsString())
 	}
-	value, err := state.GetInstanceField([]string{"config", "netClsId"}, ps.Instances["test_capsule"].Fields)
+
+	value, err := ps.Instances["test_capsule"].GetFromNesting([]string{"config", "netClsId"})
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Printf("test_capsule->config->netClsId: %s\n", value)
-	value, err = state.GetInstanceField([]string{"containerId"}, ps.Instances["test_capsule"].Fields)
+
+	value, err = ps.Instances["test_capsule"].GetFromNesting([]string{"containerId"})
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Printf("test_capsule->containerId: %s\n", value)
+
+	//file, _ := json.MarshalIndent(ps, "", " ")
+	//err = createDirIfNotExists(operationalDirectory, 0700)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//_ = ioutil.WriteFile(stateOut, file, 0644)
 }

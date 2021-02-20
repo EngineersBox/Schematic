@@ -1,4 +1,4 @@
-package schematic
+package state
 
 import (
 	"regexp"

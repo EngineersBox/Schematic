@@ -1,4 +1,4 @@
-package schema
+package state
 
 /*
  * This file is basically copied from the HashiCorp Terraform source code:
@@ -11,24 +11,19 @@ import (
 	"sync"
 	"time"
 
-	"github.com/EngineersBox/Schematic/schematic"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
 type InstanceData struct {
 	// Settable (internally)
-	schema       map[string]*Schema
-	config       *schematic.InstanceConfig
-	state        *schematic.InstanceState
-	diff         *schematic.InstanceDiff
+	state        *InstanceState
+	diff         *InstanceDiff
 	meta         map[string]interface{}
 	timeouts     *InstanceTimeout
 	providerMeta cty.Value
 
-	// multiReader *MultiLevelFieldReader
-	// setWriter   *MapFieldWriter
-	newState *schematic.InstanceState
+	newState *InstanceState
 	partial  bool
 	once     sync.Once
 	isNew    bool
@@ -36,18 +31,19 @@ type InstanceData struct {
 	panicOnError bool
 }
 
-// getResult is the internal structure that is generated when a Get
-// is called that contains some extra data that might be used.
-type getResult struct {
-	Value          interface{}
-	ValueProcessed interface{}
-	Computed       bool
-	Exists         bool
-	Schema         *Schema
+func NewInstanceData(current *InstanceState, new *InstanceState) *InstanceData {
+	return &InstanceData{
+		state:    current,
+		newState: new,
+	}
 }
 
 func (d *InstanceData) Get(key string) interface{} {
 	return nil // TODO: implement this
+}
+
+func (d *InstanceData) GetFromNesting(nesting []string) (interface{}, error) {
+	return d.state.GetAttributeNesting(nesting)
 }
 
 func (d *InstanceData) GetChange(key string) (interface{}, interface{}) {
@@ -85,11 +81,6 @@ func (d *InstanceData) HasChangesExcept(keys ...string) bool {
 
 func (d *InstanceData) HasChange(key string) bool {
 	o, n := d.GetChange(key)
-
-	if eq, ok := o.(Equal); ok {
-		return !eq.Equal(n)
-	}
-
 	return !reflect.DeepEqual(o, n)
 }
 
@@ -127,14 +118,14 @@ func (d *InstanceData) Id() string {
 	if d.state != nil {
 		result = d.state.ID
 		if result == "" {
-			result = d.state.Attributes["id"]
+			result = d.state.Attributes["id"].(string)
 		}
 	}
 
 	if d.newState != nil {
 		result = d.newState.ID
 		if result == "" {
-			result = d.newState.Attributes["id"]
+			result = d.newState.Attributes["id"].(string)
 		}
 	}
 
@@ -151,7 +142,7 @@ func (d *InstanceData) SetType(t string) {
 
 // State returns the new InstanceState after the diff and any Set
 // calls.
-func (d *InstanceData) State() *schematic.InstanceState {
+func (d *InstanceData) State() *InstanceState {
 	return nil // TODO: implement this
 }
 

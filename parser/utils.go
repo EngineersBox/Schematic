@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"github.com/EngineersBox/Schematic/collection"
 	"github.com/EngineersBox/Schematic/schema"
 )
 
@@ -10,7 +11,7 @@ func validateSchemaFields(fields []string, instanceSchema map[string]*schema.Sch
 	if len(fields) == 1 {
 		return hasField
 	}
-	if instanceSchema[fields[0]].Type != schema.TypeMap {
+	if instanceSchema[fields[0]].Type != schematic.TypeMap {
 		return false
 	}
 	nestedSchema, ok := instanceSchema[fields[0]].Elem.(map[string]*schema.Schema)

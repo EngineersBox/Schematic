@@ -1,5 +1,5 @@
-github.com/EngineersBox/ModularCLI v1.2.0 h1:W2KQ4+uSzPrDmpMRz3Grl8aWagLckf2knV8afSJchsA=
-github.com/EngineersBox/ModularCLI v1.2.0/go.mod h1:2MuBiGke6QwopazRmZvyM+myzIkPLygNz0lg3hW2hh8=
+github.com/EngineersBox/ModularCLI v1.3.0 h1:05/kRS/92vrSWAVXGw8i0s27u2FewZBnZpFbSvK9Afw=
+github.com/EngineersBox/ModularCLI v1.3.0/go.mod h1:2MuBiGke6QwopazRmZvyM+myzIkPLygNz0lg3hW2hh8=
 github.com/apparentlymart/go-textseg/v12 v12.0.0/go.mod h1:S/4uRK2UtaQttw1GenVJEynmyUenKwP++x/+DdGV/Ec=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/golang/protobuf v1.3.1/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=

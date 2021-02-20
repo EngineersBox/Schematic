@@ -1,4 +1,4 @@
-package schema
+package schematic
 
 // ValueType is an enum of the type that can be represented by a schema.
 type ValueType int

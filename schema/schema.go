@@ -1,13 +1,12 @@
 package schema
 
 import (
-	"os"
-
-	"github.com/EngineersBox/Schematic/schematic"
+	collection "github.com/EngineersBox/Schematic/collection"
+	"github.com/EngineersBox/Schematic/state"
 )
 
 type Schema struct {
-	Type ValueType
+	Type collection.ValueType
 
 	Optional bool
 	Required bool
@@ -90,24 +89,4 @@ type SchemaStateFunc func(interface{}) string
 
 type SchemaValidateFunc func(interface{}, string) ([]string, []error)
 
-type SchemaDiffFunc func(k, old, new string, d *InstanceData) bool
-
-type schemaMap map[string]*Schema
-
-func (m schemaMap) panicOnError() bool {
-	return os.Getenv("TF_ACC") != ""
-}
-
-// Data returns a ResourceData for the given schema, state, and diff.
-//
-// The diff is optional.
-func (m schemaMap) Data(
-	s *schematic.InstanceState,
-	d *schematic.InstanceDiff) (*InstanceData, error) {
-	return &InstanceData{
-		schema:       m,
-		state:        s,
-		diff:         d,
-		panicOnError: m.panicOnError(),
-	}, nil
-}
+type SchemaDiffFunc func(k, old, new string, d *state.InstanceData) bool

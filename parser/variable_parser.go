@@ -2,7 +2,7 @@ package parser
 
 import (
 	"fmt"
-	"github.com/EngineersBox/Schematic/schema"
+	"github.com/EngineersBox/Schematic/collection"
 	"github.com/EngineersBox/Schematic/state"
 	"github.com/zclconf/go-cty/cty"
 	"strconv"
@@ -36,14 +36,14 @@ func (p *Parser) parseVariable() (string, *state.Variable, error) {
 		val, err := strconv.ParseFloat(lit, 64)
 		if err != nil {
 			newVar.Value = cty.StringVal(lit)
-			newVar.BaseType = schema.TypeString
+			newVar.BaseType = schematic.TypeString
 		} else {
 			newVar.Value = cty.NumberFloatVal(val)
-			newVar.BaseType = schema.TypeFloat
+			newVar.BaseType = schematic.TypeFloat
 		}
 	} else {
 		newVar.Value = cty.NumberIntVal(val)
-		newVar.BaseType = schema.TypeInt
+		newVar.BaseType = schematic.TypeInt
 	}
 	tok, lit = p.scanIgnoreWhitespace(false)
 	if tok != CLOSEDBRACE {
