@@ -1,0 +1,29 @@
+{
+	"version": 1,
+	"modules": [
+		{
+			"path": "schematicFilePath",
+			"instances": {
+				"test_capsule": {
+					"id": "test_capsule",
+					"kind": "config",
+					"attributes": {
+						"config": {
+							"memMax": "4096",
+							"netClsId": "85831",
+							"pidsMax": "20",
+							"terminateOnClose": "true"
+						},
+						"containerId": "test_capsule_id",
+						"inbuilt": "true"
+					},
+					"meta": null,
+					"provider": "capsule",
+					"tainted": false
+				}
+			},
+			"captures": null,
+			"data": null
+		}
+	]
+}
