@@ -8,7 +8,6 @@ import (
 	"github.com/EngineersBox/Schematic/parser"
 	"github.com/EngineersBox/Schematic/providers"
 	"github.com/EngineersBox/Schematic/schema"
-	"github.com/EngineersBox/Schematic/state"
 	"log"
 	"os"
 	"strings"
@@ -181,14 +180,6 @@ func main() {
 	ps, err := p.Parse()
 	if err != nil {
 		panic(err)
-	}
-
-	newState := &state.State{
-		Filename: stateOut,
-	}
-	err = newState.Init(ps)
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	newVar := ps.Variables["testcapsule_clsid"]
